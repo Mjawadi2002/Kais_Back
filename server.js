@@ -20,13 +20,14 @@ if (NODE_ENV === 'production') {
   // Production: specific origins
   corsOptions = {
     origin: [
+      'https://kaisfront-production.up.railway.app',
       'https://kais-front-production.up.railway.app',
-      'https://kaisfront-production.up.railway.app', 
       FRONTEND_URL
     ].filter(Boolean), // Remove any undefined values
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
   };
 } else {
   // Development: allow localhost origins
