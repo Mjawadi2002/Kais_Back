@@ -11,18 +11,38 @@ const productRouter = require('./routers/ProductRouter');
 const statsRouter = require('./routers/StatsRouter');
 const PORT = process.env.PORT || 5000;
 
-// CORS configuration - in development allow all origins if FRONTEND_URL isn't set
+// CORS configuration - support multiple environments
 const FRONTEND_URL = process.env.FRONTEND_URL;
-if (FRONTEND_URL) {
-  app.use(cors({
-    origin: FRONTEND_URL,
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+let corsOptions;
+if (NODE_ENV === 'production') {
+  // Production: specific origins
+  corsOptions = {
+    origin: [
+      'https://kais-front-production.up.railway.app',
+      'https://kaisfront-production.up.railway.app', 
+      FRONTEND_URL
+    ].filter(Boolean), // Remove any undefined values
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-  }));
+    credentials: true
+  };
 } else {
-  // no FRONTEND_URL provided: allow all origins (useful for local development)
-  app.use(cors());
+  // Development: allow localhost origins
+  corsOptions = {
+    origin: [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      FRONTEND_URL
+    ].filter(Boolean),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  };
 }
+
+app.use(cors(corsOptions));
 // CORS middleware above already handles preflight requests
 
 // Middleware to parse JSON request bodies
