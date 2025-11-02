@@ -9,7 +9,6 @@ const userRouter = require('./routers/UserRouter');
 const authRouter = require('./routers/AuthRouter');
 const productRouter = require('./routers/ProductRouter');
 const statsRouter = require('./routers/StatsRouter');
-const adminSetupRouter = require('./routers/AdminSetupRouter');
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration - support multiple environments
@@ -70,7 +69,6 @@ app.use('/api/v1', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/stats', statsRouter);
-app.use('/api/v1/setup', adminSetupRouter);
 
 // simple health endpoint
 app.get('/health', (req, res) => {
