@@ -15,36 +15,53 @@ const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-let corsOptions;
-if (NODE_ENV === 'production') {
-  // Production: specific origins
-  corsOptions = {
-    origin: [
+console.log('🔧 CORS Configuration:', {
+  NODE_ENV,
+  FRONTEND_URL,
+  PORT: process.env.PORT
+});
+
+// More permissive CORS configuration for production debugging
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
       'https://kaisfront-production.up.railway.app',
       'https://kais-front-production.up.railway.app',
-      FRONTEND_URL
-    ].filter(Boolean), // Remove any undefined values
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-  };
-} else {
-  // Development: allow localhost origins
-  corsOptions = {
-    origin: [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
       FRONTEND_URL
-    ].filter(Boolean),
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  };
-}
+    ].filter(Boolean);
+
+    console.log('🌐 CORS Check - Origin:', origin, 'Allowed:', allowedOrigins);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('❌ CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  preflightContinue: false
+};
 
 app.use(cors(corsOptions));
-// CORS middleware above already handles preflight requests
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`, {
+    origin: req.get('origin'),
+    userAgent: req.get('user-agent'),
+    headers: req.headers
+  });
+  next();
+});
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
@@ -55,7 +72,21 @@ app.use('/api/v1/stats', statsRouter);
 
 // simple health endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    cors: 'enabled'
+  });
+});
+
+// CORS test endpoint
+app.get('/api/v1/test-cors', (req, res) => {
+  res.json({
+    message: 'CORS is working!',
+    origin: req.get('origin'),
+    timestamp: new Date().toISOString()
+  });
 });
 
 
