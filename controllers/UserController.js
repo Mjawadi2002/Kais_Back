@@ -101,14 +101,43 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// delete user (admin)
+// delete user (admin) with cascading operations
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Import Product model for cascading operations
+    const Product = require('../models/ProductModel');
+
+    let cascadeInfo = 'No cascading operations needed';
+    
+    if (user.role === 'client') {
+      // If deleting a client, delete all their products
+      const deletedProducts = await Product.deleteMany({ client: id });
+      console.log(`Deleted ${deletedProducts.deletedCount} products belonging to client ${user.name}`);
+      cascadeInfo = `Deleted ${deletedProducts.deletedCount} product(s) belonging to this client`;
+    } else if (user.role === 'delivery') {
+      // If deleting a delivery person, unassign them from products and reset status to "In Stock"
+      const updatedProducts = await Product.updateMany(
+        { assignedTo: id },
+        { 
+          $unset: { assignedTo: 1 }, // Remove assignment
+          $set: { status: 'In Stock' } // Reset status to initial state
+        }
+      );
+      console.log(`Unassigned ${updatedProducts.modifiedCount} products from delivery person ${user.name}`);
+      cascadeInfo = `Unassigned ${updatedProducts.modifiedCount} product(s) and reset their status to "In Stock"`;
+    }
+
+    // Delete the user
     await User.deleteOne({ _id: id });
-    res.json({ message: 'User deleted' });
+    
+    res.json({ 
+      message: `User deleted successfully`,
+      cascadeInfo: cascadeInfo
+    });
   } catch (err) {
     console.error('Delete user error:', err);
     res.status(500).json({ message: 'Server error' });
