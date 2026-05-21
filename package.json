@@ -1,7 +1,7 @@
 {
-  "name": "kais-delivery-backend",
+  "name": "routeflow-backend",
   "version": "1.0.0",
-  "description": "Delivery Management System Backend API",
+  "description": "RouteFlow — Smart Delivery Management System API",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0",
@@ -13,7 +13,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["delivery", "management", "api", "nodejs"],
-  "author": "Kais Delivery Team",
+  "author": "RouteFlow Team",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

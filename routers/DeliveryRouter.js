@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const DeliveryController = require('../controllers/DeliveryController');
-const { 
-  authMiddleware, 
-  requireAdmin, 
+const {
+  authMiddleware,
+  requireAdmin,
   requireAdminOrDelivery,
-  requireAdminOrClient 
-} = require('../middleware/authMiddleware');
+  requireAdminOrClient
+} = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
 router.use(authMiddleware);

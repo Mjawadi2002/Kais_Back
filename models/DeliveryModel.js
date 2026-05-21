@@ -119,6 +119,6 @@ DeliverySchema.virtual('deliveryDuration').get(function() {
 DeliverySchema.index({ status: 1, createdAt: -1 });
 DeliverySchema.index({ client: 1, status: 1 });
 DeliverySchema.index({ deliveryPerson: 1, status: 1 });
-DeliverySchema.index({ trackingNumber: 1 });
+// trackingNumber already indexed via unique:true — no duplicate needed
 
 module.exports = mongoose.model('Delivery', DeliverySchema);

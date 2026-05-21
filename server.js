@@ -12,36 +12,25 @@ const statsRouter = require('./routers/StatsRouter');
 const deliveryRouter = require('./routers/DeliveryRouter');
 const PORT = process.env.PORT || 5000;
 
-// CORS configuration - support multiple environments
 const FRONTEND_URL = process.env.FRONTEND_URL;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-console.log('🔧 CORS Configuration:', {
-  NODE_ENV,
-  FRONTEND_URL,
-  PORT: process.env.PORT
-});
-
-// More permissive CORS configuration for production debugging
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
-      'https://kaisfront-production.up.railway.app',
-      'https://kais-front-production.up.railway.app',
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      FRONTEND_URL
+      ...(FRONTEND_URL ? [FRONTEND_URL] : [])
     ].filter(Boolean);
 
-    console.log('🌐 CORS Check - Origin:', origin, 'Allowed:', allowedOrigins);
-    
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn('❌ CORS blocked origin:', origin);
+      if (NODE_ENV === 'development') {
+        console.warn('CORS blocked origin:', origin);
+      }
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -54,17 +43,13 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Debug middleware to log all requests
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`, {
-    origin: req.get('origin'),
-    userAgent: req.get('user-agent'),
-    headers: req.headers
+if (NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
   });
-  next();
-});
+}
 
-// Middleware to parse JSON request bodies
 app.use(express.json());
 app.use('/api/v1', userRouter);
 app.use('/api/v1/auth', authRouter);
@@ -72,17 +57,15 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/stats', statsRouter);
 app.use('/api/v1/deliveries', deliveryRouter);
 
-// simple health endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    environment: NODE_ENV,
     cors: 'enabled'
   });
 });
 
-// CORS test endpoint
 app.get('/api/v1/test-cors', (req, res) => {
   res.json({
     message: 'CORS is working!',
@@ -91,19 +74,13 @@ app.get('/api/v1/test-cors', (req, res) => {
   });
 });
 
-
-// Define the startServer function
 const startServer = async () => {
   try {
-    // Connect to MongoDB
     await connectDB();
     console.log('✅ Database connected successfully');
-
-    // Start Express server
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
+      console.log(`🚀 RouteFlow server running on port ${PORT}`);
     });
-
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
     process.exit(1);

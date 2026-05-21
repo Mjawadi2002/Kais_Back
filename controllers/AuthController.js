@@ -5,6 +5,10 @@ const User = require('../models/UserModel');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'change_this_refresh_secret';
+
+if (!process.env.JWT_REFRESH_SECRET) {
+  console.warn('WARNING: JWT_REFRESH_SECRET not set — using insecure fallback. Set it in your .env file.');
+}
 const JWT_EXPIRES = '1h'; // Access token expires in 1 hour
 const JWT_REFRESH_EXPIRES = '7d'; // Refresh token expires in 7 days
 

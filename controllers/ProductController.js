@@ -78,8 +78,7 @@ exports.assignDelivery = async (req, res) => {
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
     product.assignedTo = deliveryPersonId;
-    // update status to Out for Delivery when assigned
-    product.status = 'Out for Delivery';
+    product.status = 'Picked';
 
     // update QR data too
     const qrPayload = {

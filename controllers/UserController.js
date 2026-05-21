@@ -54,14 +54,20 @@ exports.listDeliveryPersons = async (req, res) => {
   }
 };
 
-// list all users (admin) with optional role filter
+// list all users (admin) with optional role filter and pagination
 exports.listAllUsers = async (req, res) => {
   try {
     const role = req.query.role;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 100;
     const filter = {};
     if (role) filter.role = role;
-    const users = await User.find(filter).select('-password');
-    res.json({ users });
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .select('-password')
+      .skip((page - 1) * limit)
+      .limit(limit);
+    res.json({ users, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
     console.error('List all users error:', err);
     res.status(500).json({ message: 'Server error' });

@@ -114,8 +114,8 @@ exports.getClientStats = async (req, res) => {
     const recentProducts = await Product.find({ client: clientId })
       .sort({ createdAt: -1 })
       .limit(8)
-      .populate('assignedTo', 'username email')
-      .populate('client', 'username email')
+      .populate('assignedTo', 'name email')
+      .populate('client', 'name email')
       .select('name status createdAt assignedTo buyerName price client');
 
     // Calculate performance metrics
